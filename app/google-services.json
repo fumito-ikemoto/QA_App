@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "923425734489",
+    "firebase_url": "https://qaapp-734f4.firebaseio.com",
+    "project_id": "qaapp-734f4",
+    "storage_bucket": "qaapp-734f4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:923425734489:android:87168743df5fdb6531d648",
+        "android_client_info": {
+          "package_name": "jp.techacademy.fumito.ikemoto.qa_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "923425734489-rt5lq6o8hgql8vpps1i5le46lgmblrqi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkzTX55I141kIrJWtJ1TJcHp8cQZggPtY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "923425734489-rt5lq6o8hgql8vpps1i5le46lgmblrqi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
