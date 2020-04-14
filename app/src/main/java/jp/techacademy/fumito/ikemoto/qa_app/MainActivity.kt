@@ -15,13 +15,11 @@ import android.view.MenuItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import android.support.design.widget.Snackbar
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import android.util.Base64  //追加する
+import android.util.Log
 import android.widget.ListView
+import com.google.firebase.database.*
+import kotlinx.android.synthetic.main.activity_question_detail.*
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -33,6 +31,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var mListView: ListView
     private lateinit var mQuestionArrayList: ArrayList<Question>
     private lateinit var mAdapter: QuestionsListAdapter
+
+    private lateinit var mFavoriteMap : Map<String, String>
 
     private var mGenreRef: DatabaseReference? = null
 
@@ -100,6 +100,73 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+
+        }
+
+        override fun onCancelled(p0: DatabaseError) {
+
+        }
+    }
+
+    private val mFavoriteLister = object : ValueEventListener{
+        override fun onDataChange(dateSnapshot: DataSnapshot) {
+            if(dateSnapshot.value == null){
+                return
+            }
+
+            mFavoriteMap = dateSnapshot.value as Map<String, String>
+
+            val ref = mDatabaseReference.child(ContentsPATH)
+            ref.addValueEventListener(mAllQuestionListener)
+        }
+
+        override fun onCancelled(p0: DatabaseError) {
+        }
+    }
+
+    private val mAllQuestionListener = object : ValueEventListener
+    {
+        override fun onDataChange(dateSnapshot : DataSnapshot) {
+
+            for(key in mFavoriteMap.keys){
+                for(genre in 1..4){
+                    val data = dateSnapshot.child(genre.toString()).child(key).value
+                    if(data == null)
+                    {
+                        continue
+                    }
+                    val map = data as Map<String, String>
+                    val title = map["title"] ?: ""
+                    val body = map["body"] ?: ""
+                    val name = map["name"] ?: ""
+                    val uid = map["uid"] ?: ""
+                    val imageString = map["image"] ?: ""
+                    val bytes =
+                        if (imageString.isNotEmpty()) {
+                            Base64.decode(imageString, Base64.DEFAULT)
+                        } else {
+                            byteArrayOf()
+                        }
+
+                    val answerArrayList = ArrayList<Answer>()
+                    val answerMap = map["answers"] as Map<String, String>?
+                    if (answerMap != null) {
+                        for (key in answerMap.keys) {
+                            val temp = answerMap[key] as Map<String, String>
+                            val answerBody = temp["body"] ?: ""
+                            val answerName = temp["name"] ?: ""
+                            val answerUid = temp["uid"] ?: ""
+                            val answer = Answer(answerBody, answerName, answerUid, key)
+                            answerArrayList.add(answer)
+                        }
+                    }
+
+                    val question = Question(title, body, name, uid, key,
+                        mGenre, bytes, answerArrayList)
+                    mQuestionArrayList.add(question)
+                    mAdapter.notifyDataSetChanged()
+                }
+            }
 
         }
 
@@ -216,7 +283,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             mGenre = 4
         } else if(id == R.id.nav_favorite){
             mToolbar.title = "お気に入り"
-            mGenre = 5
+            mGenre = FavoriteGenre
         }
 
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
@@ -231,9 +298,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (mGenreRef != null) {
             mGenreRef!!.removeEventListener(mEventListener)
         }
-        mGenreRef = mDatabaseReference.child(ContentsPATH).child(mGenre.toString())
-        mGenreRef!!.addChildEventListener(mEventListener)
 
+        if(mGenre == FavoriteGenre)
+        {
+            val user = FirebaseAuth.getInstance().currentUser
+            val favoriteRef = mDatabaseReference.child(FavoritePath).child(user!!.uid)
+            favoriteRef.addValueEventListener(mFavoriteLister)
+        }
+        else{
+            //お気に入り以外の場合
+            mGenreRef = mDatabaseReference.child(ContentsPATH).child(mGenre.toString())
+            mGenreRef!!.addChildEventListener(mEventListener)
+        }
         return true
     }
 }
