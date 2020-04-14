@@ -1,5 +1,6 @@
 package jp.techacademy.fumito.ikemoto.qa_app
 
+import android.content.ClipData
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
@@ -114,6 +115,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setSupportActionBar(mToolbar)
 
         val fab = findViewById<FloatingActionButton>(R.id.fab)
+
+        // ログイン済みのユーザーを取得する
+        val user = FirebaseAuth.getInstance().currentUser
+
         fab.setOnClickListener { view ->
             // ジャンルを選択していない場合（mGenre == 0）はエラーを表示するだけ
             if (mGenre == 0) {
@@ -121,8 +126,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             } else {
 
             }
-            // ログイン済みのユーザーを取得する
-            val user = FirebaseAuth.getInstance().currentUser
 
             if (user == null) {
                 // ログインしていなければログイン画面に遷移させる
@@ -144,6 +147,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
         navigationView.setNavigationItemSelectedListener(this)
+        navigationView.menu.findItem(R.id.nav_favorite).isVisible = user != null
 
         // Firebase
         mDatabaseReference = FirebaseDatabase.getInstance().reference
@@ -165,11 +169,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onResume() {
         super.onResume()
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
+        // ログイン済みのユーザーを取得する
+        val user = FirebaseAuth.getInstance().currentUser
 
         // 1:趣味を既定の選択とする
         if(mGenre == 0) {
             onNavigationItemSelected(navigationView.menu.getItem(0))
         }
+
+        navigationView.setNavigationItemSelectedListener(this)
+        navigationView.menu.findItem(R.id.nav_favorite).isVisible = user != null
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -205,6 +214,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         } else if (id == R.id.nav_compter) {
             mToolbar.title = "コンピューター"
             mGenre = 4
+        } else if(id == R.id.nav_favorite){
+            mToolbar.title = "お気に入り"
+            mGenre = 5
         }
 
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
