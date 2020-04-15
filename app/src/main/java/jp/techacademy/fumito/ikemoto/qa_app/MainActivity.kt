@@ -35,6 +35,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var mFavoriteMap : Map<String, String>
 
     private var mGenreRef: DatabaseReference? = null
+    private var mFavoriteRef: DatabaseReference? = null
+    private var mAllQuestionRef: DatabaseReference? = null
 
     private val mEventListener = object : ChildEventListener {
         override fun onChildAdded(dataSnapshot: DataSnapshot, s: String?) {
@@ -116,8 +118,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             mFavoriteMap = dateSnapshot.value as Map<String, String>
 
-            val ref = mDatabaseReference.child(ContentsPATH)
-            ref.addValueEventListener(mAllQuestionListener)
+            mAllQuestionRef = mDatabaseReference.child(ContentsPATH)
+            mAllQuestionRef!!.addValueEventListener(mAllQuestionListener)
         }
 
         override fun onCancelled(p0: DatabaseError) {
@@ -300,11 +302,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             mGenreRef!!.removeEventListener(mEventListener)
         }
 
+        if(mFavoriteRef != null){
+            mFavoriteRef!!.removeEventListener(mFavoriteLister)
+        }
+
+        if(mAllQuestionRef != null){
+            mAllQuestionRef!!.removeEventListener(mAllQuestionListener)
+        }
+
         if(mGenre == FavoriteGenre)
         {
             val user = FirebaseAuth.getInstance().currentUser
-            val favoriteRef = mDatabaseReference.child(FavoritePath).child(user!!.uid)
-            favoriteRef.addValueEventListener(mFavoriteLister)
+            mFavoriteRef = mDatabaseReference.child(FavoritePath).child(user!!.uid)
+            mFavoriteRef!!.addValueEventListener(mFavoriteLister)
         }
         else{
             //お気に入り以外の場合
