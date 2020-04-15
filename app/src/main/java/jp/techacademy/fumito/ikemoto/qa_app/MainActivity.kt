@@ -229,6 +229,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         mAdapter.notifyDataSetChanged()
 
         mListView.setOnItemClickListener { parent, view, position, id ->
+
             // Questionのインスタンスを渡して質問詳細画面を起動する
             val intent = Intent(applicationContext, QuestionDetailActivity::class.java)
             intent.putExtra("question", mQuestionArrayList[position])
@@ -246,9 +247,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if(mGenre == 0) {
             onNavigationItemSelected(navigationView.menu.getItem(0))
         }
+        else{
+            onNavigationItemSelected(navigationView.menu.getItem((mGenre - 1)))
+        }
 
         navigationView.setNavigationItemSelectedListener(this)
         navigationView.menu.findItem(R.id.nav_favorite).isVisible = user != null
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
